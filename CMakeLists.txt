@@ -13,9 +13,11 @@ FetchContent_Declare(SFML
 FetchContent_MakeAvailable(SFML)
 
 add_library(game src/game.hpp src/game.cpp)
+add_library(board src/board.hpp src/board.cpp)
 add_executable(${PROJECT_NAME} src/main.cpp)
 
-target_link_libraries(game PUBLIC sfml-graphics)
+target_link_libraries(board PUBLIC sfml-graphics)
+target_link_libraries(game PUBLIC board)
 target_link_libraries(${PROJECT_NAME} PRIVATE game)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 

@@ -1,16 +1,19 @@
 #include "game.hpp"
 
 Game::Game() 
-    : m_window{sf::VideoMode(m_window_size.x, m_window_size.y), m_name}
+    : m_window{sf::VideoMode::getDesktopMode(), m_name},
+    m_window_size{m_window.getSize()},
+    m_board((m_window_size.x - m_window_size.y) / 2.0f * 1.2f, m_window_size.y / 8.0f * 0.8f, 8, 8)
 {
+}
+
+void Game::draw_all()
+{
+    m_window.draw(m_board);
 }
 
 void Game::run()
 {
-    sf::CircleShape shape(50.f);
-    shape.setFillColor(sf::Color::Blue);
-    shape.setPosition(m_window_size.x / 2, m_window_size.y / 2);
-
     while (m_window.isOpen())
     {
         for (auto event = sf::Event{}; m_window.pollEvent(event);)
@@ -21,8 +24,8 @@ void Game::run()
             }
         }
 
-        m_window.clear();
-        m_window.draw(shape);
+        m_window.clear(sf::Color(104, 40, 42));
+        draw_all();
         m_window.display();
     }
 }
