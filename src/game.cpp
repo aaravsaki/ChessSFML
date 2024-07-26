@@ -3,7 +3,7 @@
 Game::Game() 
     : m_window{sf::VideoMode::getDesktopMode(), m_name},
     m_window_size{m_window.getSize()},
-    m_board((m_window_size.x - m_window_size.y) / 2.0f * 1.2f, m_window_size.y / 8.0f * 0.8f, 8, 8)
+    m_board((m_window_size.x - m_window_size.y * 0.8f) / 2.0f, m_window_size.y / 8.0f * 0.8f, 8, 8)
 {
 }
 
