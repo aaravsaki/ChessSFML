@@ -2,6 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include "piece.hpp"
 #include <vector>
+#include <memory>
 
 class Board : public sf::Drawable
 {
@@ -9,6 +10,7 @@ class Board : public sf::Drawable
     int m_cols;
     float m_tile_size;
     float m_horizontal_offset;
+
     sf::Texture wpawn;
     sf::Texture bpawn;
     sf::Texture wrook;
@@ -21,7 +23,11 @@ class Board : public sf::Drawable
     sf::Texture bqueen;
     sf::Texture wking;
     sf::Texture bking;
-    std::vector<std::vector<Piece>> pieces;
+
+    std::vector<std::vector<std::unique_ptr<Piece>>> field;
+
+    void initialize_textures();
+    void initialize_pieces();
 
 public:
     Board(float horizontal_offset, float tile_size, int rows, int cols);

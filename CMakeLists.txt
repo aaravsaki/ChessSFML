@@ -15,13 +15,23 @@ FetchContent_Declare(SFML
     GIT_TAG 2.6.x)
 FetchContent_MakeAvailable(SFML)
 
-add_library(game src/game.hpp src/game.cpp)
-add_library(board src/board.hpp src/board.cpp)
-add_executable(${PROJECT_NAME} src/main.cpp)
+add_executable(
+    ${PROJECT_NAME} 
+    src/main.cpp 
+    src/board.cpp 
+    src/piece.cpp 
+    src/slider.cpp 
+    src/king.cpp 
+    src/queen.cpp 
+    src/knight.cpp 
+    src/bishop.cpp
+    src/rook.cpp
+    src/pawn.cpp
+    src/game.cpp
+)
 
-target_link_libraries(board PUBLIC sfml-graphics)
-target_link_libraries(game PUBLIC board)
-target_link_libraries(${PROJECT_NAME} PRIVATE game)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(${PROJECT_NAME} PUBLIC sfml-graphics)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
 if(WIN32)
