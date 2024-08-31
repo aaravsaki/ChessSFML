@@ -19,13 +19,13 @@ class Board : public sf::Drawable
     template <typename T>
     void initialize_piece(PieceType piece_type, Coord position, Team team)
     {
-        auto [x, y] = position;
-        field[x][y] = std::make_unique<T>(piece_type, team, position);
-        field[x][y]->sprite.setTexture(textures[piece_type]);
-        if (team == Team::black) field[x][y]->sprite.setColor(sf::Color::Black);
-        field[x][y]->sprite.setPosition(x * m_tile_size + m_horizontal_offset, y * m_tile_size);
-        field[x][y]->sprite.setScale(m_tile_size * 0.8f / field[x][y]->sprite.getLocalBounds().width, m_tile_size * 0.8f / field[x][y]->sprite.getLocalBounds().height);
-        field[x][y]->sprite.move(m_tile_size * 0.1f, m_tile_size * 0.1f);
+        auto [row, col] = position;
+        field[row][col] = std::make_unique<T>(piece_type, team, position);
+        field[row][col]->sprite.setTexture(textures[piece_type]);
+        if (team == Team::black) field[row][col]->sprite.setColor(sf::Color::Black);
+        field[row][col]->sprite.setPosition(col * m_tile_size + m_horizontal_offset, row * m_tile_size);
+        field[row][col]->sprite.setScale(m_tile_size * 0.8f / field[row][col]->sprite.getLocalBounds().width, m_tile_size * 0.8f / field[row][col]->sprite.getLocalBounds().height);
+        field[row][col]->sprite.move(m_tile_size * 0.1f, m_tile_size * 0.1f);
     }
 
     void initialize_pieces();
