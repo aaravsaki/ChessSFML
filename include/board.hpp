@@ -1,8 +1,9 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "piece.hpp"
-#include <vector>
+#include <map>
 #include <memory>
+#include <vector>
 
 class Board : public sf::Drawable
 {
@@ -10,23 +11,23 @@ class Board : public sf::Drawable
     int m_cols;
     float m_tile_size;
     float m_horizontal_offset;
-
-    sf::Texture wpawn;
-    sf::Texture bpawn;
-    sf::Texture wrook;
-    sf::Texture brook;
-    sf::Texture wbishop;
-    sf::Texture bbishop;
-    sf::Texture wknight;
-    sf::Texture bknight;
-    sf::Texture wqueen;
-    sf::Texture bqueen;
-    sf::Texture wking;
-    sf::Texture bking;
-
+    std::map<PieceType, sf::Texture> textures;
     std::vector<std::vector<std::unique_ptr<Piece>>> field;
 
     void initialize_textures();
+
+    template <typename T>
+    void initialize_piece(PieceType piece_type, Coord position, Team team)
+    {
+        auto [x, y] = position;
+        field[x][y] = std::make_unique<T>(piece_type, team, position);
+        field[x][y]->sprite.setTexture(textures[piece_type]);
+        if (team == Team::black) field[x][y]->sprite.setColor(sf::Color::Black);
+        field[x][y]->sprite.setPosition(x * m_tile_size + m_horizontal_offset, y * m_tile_size);
+        field[x][y]->sprite.setScale(m_tile_size * 0.8f / field[x][y]->sprite.getLocalBounds().width, m_tile_size * 0.8f / field[x][y]->sprite.getLocalBounds().height);
+        field[x][y]->sprite.move(m_tile_size * 0.1f, m_tile_size * 0.1f);
+    }
+
     void initialize_pieces();
 
 public:

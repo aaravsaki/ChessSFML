@@ -4,32 +4,34 @@
 
 void Board::initialize_textures()
 {
+    sf::Texture wpawn;
+    sf::Texture wrook;
+    sf::Texture wbishop;
+    sf::Texture wknight;
+    sf::Texture wqueen;
+    sf::Texture wking;
+
     wpawn.loadFromFile("ChessAssets/w_pawn_1x_ns.png");
-    bpawn.loadFromFile("ChessAssets/b_pawn_1x_ns.png");
     wrook.loadFromFile("ChessAssets/w_rook_1x_ns.png");
-    brook.loadFromFile("ChessAssets/b_rook_1x_ns.png");
     wbishop.loadFromFile("ChessAssets/w_bishop_1x_ns.png");
-    bbishop.loadFromFile("ChessAssets/b_bishop_1x_ns.png");
     wknight.loadFromFile("ChessAssets/w_knight_1x_ns.png");
-    bknight.loadFromFile("ChessAssets/b_knight_1x_ns.png");
     wking.loadFromFile("ChessAssets/w_king_1x_ns.png");
-    bking.loadFromFile("ChessAssets/b_king_1x_ns.png");
     wqueen.loadFromFile("ChessAssets/w_queen_1x_ns.png");
-    bqueen.loadFromFile("ChessAssets/b_queen_1x_ns.png");
+
+    textures[PieceType::pawn] = wpawn;
+    textures[PieceType::rook] = wrook;
+    textures[PieceType::bishop] = wbishop;
+    textures[PieceType::knight] = wknight;
+    textures[PieceType::king] = wking;
+    textures[PieceType::queen] = wqueen;
 }
 
 void Board::initialize_pieces()
 {
-    for (int i = 0; i < m_rows; ++i)
+    for (int i = 0; i < m_cols; ++i)
     {
-        for (int j = 0; j < m_cols; ++j)
-        {
-            field[i][j] = std::make_unique<Pawn>(PieceType::pawn, Team::white, Coord{4, 3});
-            field[i][j]->sprite.setTexture(wpawn);
-            field[i][j]->sprite.setPosition(i * m_tile_size + m_horizontal_offset, j * m_tile_size);
-            field[i][j]->sprite.setScale(m_tile_size * 0.8f / field[i][j]->sprite.getLocalBounds().width, m_tile_size * 0.8f / field[i][j]->sprite.getLocalBounds().height);
-            field[i][j]->sprite.move(m_tile_size * 0.1f, m_tile_size * 0.1f);
-        }
+        initialize_piece<Pawn>(PieceType::pawn, Coord{i, 1}, Team::black);
+        initialize_piece<Pawn>(PieceType::pawn, Coord{i, 6}, Team::white);
     }
 }
 
@@ -50,11 +52,11 @@ void Board::draw(sf::RenderTarget& target, sf::RenderStates states) const
         for (int j = 0; j < m_cols; ++j)
         {
             tile.setPosition(i * m_tile_size + m_horizontal_offset, j * m_tile_size);
-            tile.setFillColor((i+j) % 2 == 0 ? sf::Color::White : sf::Color::Black);
+            tile.setFillColor((i+j) % 2 == 0 ? sf::Color(212, 182, 163) : sf::Color(48, 40, 35));
             tile.setOutlineColor(sf::Color::Black);
-            if (i == 0 && j == 0) tile.setFillColor(sf::Color::Green);
             target.draw(tile, states);
-            target.draw(field[i][j]->sprite, states);
+            if (field[i][j]) target.draw(field[i][j]->sprite, states);
+
         }
     }
 

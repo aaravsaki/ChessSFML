@@ -13,7 +13,7 @@ std::vector<Coord> Pawn::getMoves(std::vector<std::vector<std::unique_ptr<Piece>
 
     if (getTeam() == Team::white)
     {
-        int dy = -1;
+        dy = -1;
     }
     
     // Sliding moves (1 or 2 spaces forward)
