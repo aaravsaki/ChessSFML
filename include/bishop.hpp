@@ -7,6 +7,4 @@ public:
     Bishop() = delete;
     Bishop(PieceType piece_type, Team team, Coord position);
     ~Bishop() override = default;
-private:
-    std::vector<Coord> directions{Coord{-1, -1}, Coord{-1, 1}, Coord{1, -1}, Coord{-1, -1}};
 };

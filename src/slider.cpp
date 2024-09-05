@@ -32,3 +32,4 @@ std::vector<Coord> Slider::getMoves(const std::vector<std::vector<std::unique_pt
 
     return moves;
 }
+

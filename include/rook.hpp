@@ -7,6 +7,4 @@ public:
     Rook() = delete;
     Rook(PieceType piece_type, Team team, Coord position);
     ~Rook() override = default;
-private:
-    std::vector<Coord> directions{Coord{-1, 0}, Coord{1, 0}, Coord{0, 1}, Coord{0, -1}};
 };
