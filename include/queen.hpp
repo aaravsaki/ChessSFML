@@ -4,7 +4,7 @@
 class Queen : public Slider
 {
 public:
-    Queen() = default;
+    Queen() = delete;
     Queen(PieceType piece_type, Team team, Coord position);
     ~Queen() override = default;
 private:

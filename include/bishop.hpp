@@ -4,7 +4,7 @@
 class Bishop : public Slider
 {
 public:
-    Bishop() = default;
+    Bishop() = delete;
     Bishop(PieceType piece_type, Team team, Coord position);
     ~Bishop() override = default;
 private:

@@ -6,7 +6,7 @@ King::King(PieceType piece_type, Team team, Coord position)
 }
 
 
-std::vector<Coord> King::getMoves(std::vector<std::vector<std::unique_ptr<Piece>>> field) const
+std::vector<Coord> King::getMoves(const std::vector<std::vector<std::unique_ptr<Piece>>>& field) const
 {
     std::vector<Coord> moves;
     int dy = 1;
@@ -18,26 +18,26 @@ std::vector<Coord> King::getMoves(std::vector<std::vector<std::unique_ptr<Piece>
     }
     
     // Sliding moves (1 or 2 spaces forward)
-    if (!field[position.x][position.y + dy])
+    if (!field[position.row][position.col + dy])
     {
-        moves.push_back(Coord{position.x, position.y + dy});
-        if (position.x == 6 && !field[position.x][position.y  + 2 * dy])
+        moves.push_back(Coord{position.row, position.col + dy});
+        if (position.row == 6 && !field[position.row][position.col  + 2 * dy])
         {
-            moves.push_back(Coord{position.x, position.y + 2 * dy});
+            moves.push_back(Coord{position.row, position.col + 2 * dy});
         }
     }
 
     // Attacking moves (one space diagonally)
-    if (position.x < 7 && field[position.x + 1][position.y + dy] && 
-        field[position.x + 1][position.y - 1]->getTeam() != getTeam())
+    if (position.row < 7 && field[position.row + 1][position.col + dy] && 
+        field[position.row + 1][position.col - 1]->getTeam() != getTeam())
     {
-        moves.push_back(Coord{position.x + 1, position.y + dy});
+        moves.push_back(Coord{position.row + 1, position.col + dy});
     }
 
-    if (position.x > 0 && field[position.x - 1][position.y + dy] && 
-        field[position.x - 1][position.y - 1]->getTeam() != getTeam())
+    if (position.row > 0 && field[position.row - 1][position.col + dy] && 
+        field[position.row - 1][position.col - 1]->getTeam() != getTeam())
     {
-        moves.push_back(Coord{position.x + 1, position.y + dy});
+        moves.push_back(Coord{position.row + 1, position.col + dy});
     }
 
     return moves;

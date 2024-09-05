@@ -5,21 +5,21 @@ Knight::Knight(PieceType piece_type, Team team, Coord position)
 {
 }
 
-std::vector<Coord> Knight::getMoves(std::vector<std::vector<std::unique_ptr<Piece>>> field) const
+std::vector<Coord> Knight::getMoves(const std::vector<std::vector<std::unique_ptr<Piece>>>& field) const
 {
-    auto [x, y] = getCoord();
+    auto [row, col] = getCoord();
     std::vector<Coord> moves;
-    for (auto &[dx, dy] : directions)
+    for (auto &[dr, dc] : directions)
     {
         if (
-            x + dx >= 0 
-            && y + dy >= 0 
-            && x + dx < field.size() 
-            && y + dy < field.size()
-            && (!field[x+dx][y+dy] || field[x+dx][y+dy]->getTeam() != getTeam())
+            row + dr >= 0 
+            && col + dc >= 0 
+            && row + dr < field.size() 
+            && col + dc < field.size()
+            && (!field[row+dr][col+dc] || field[row+dr][col+dc]->getTeam() != getTeam())
         )
         {
-            moves.push_back(Coord{x + dx, y + dy});
+            moves.push_back(Coord{row + dr, col + dc});
         }
     }
     return moves;

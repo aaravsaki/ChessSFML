@@ -1,4 +1,5 @@
 #pragma once
+#include <cmath>
 #include <SFML/Graphics.hpp>
 #include "piece.hpp"
 #include <map>
@@ -11,28 +12,36 @@ class Board : public sf::Drawable
     int m_cols;
     float m_tile_size;
     float m_horizontal_offset;
-    std::map<PieceType, sf::Texture> textures;
-    std::vector<std::vector<std::unique_ptr<Piece>>> field;
+    float m_vertical_offset;
+    std::map<PieceType, sf::Texture> m_textures;
+    std::vector<std::vector<std::unique_ptr<Piece>>> m_field;
+    Piece* m_selected_piece = nullptr;
+    Team currentTurn{Team::white};
 
-    void initialize_textures();
+    void initializeTextures();
 
     template <typename T>
-    void initialize_piece(PieceType piece_type, Coord position, Team team)
+    void initializePiece(PieceType piece_type, Coord position, Team team)
     {
         auto [row, col] = position;
-        field[row][col] = std::make_unique<T>(piece_type, team, position);
-        field[row][col]->sprite.setTexture(textures[piece_type]);
-        if (team == Team::black) field[row][col]->sprite.setColor(sf::Color::Black);
-        field[row][col]->sprite.setPosition(col * m_tile_size + m_horizontal_offset, row * m_tile_size);
-        field[row][col]->sprite.setScale(m_tile_size * 0.8f / field[row][col]->sprite.getLocalBounds().width, m_tile_size * 0.8f / field[row][col]->sprite.getLocalBounds().height);
-        field[row][col]->sprite.move(m_tile_size * 0.1f, m_tile_size * 0.1f);
+        m_field[row][col] = std::make_unique<T>(piece_type, team, position);
+        m_field[row][col]->sprite.setTexture(m_textures[piece_type]);
+        if (team == Team::black) m_field[row][col]->sprite.setColor(sf::Color::Black);
+        setTexturePos(row, col);
     }
 
-    void initialize_pieces();
+    void initializePieces();
+    void setTexturePos(int row, int col);
+
+    // Given the (x, y) coordinates of a mouse click,
+    // calculates the respective board coordinate
+    Coord calculatePosition(int x, int y);
 
 public:
-    Board(float horizontal_offset, float tile_size, int rows, int cols);
+    Board(float horizontal_offset, float vertical_offset, float tile_size, int rows, int cols);
     ~Board() = default;
     void draw(sf::RenderTarget& target, sf::RenderStates states =sf::RenderStates()) const override;
+    void updateSelected(int mouse_x, int mouse_y);
+    void makeMove(Coord origin, Coord destination);
 };
 

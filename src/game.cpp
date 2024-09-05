@@ -3,7 +3,7 @@
 Game::Game() 
     : m_window{sf::VideoMode::getDesktopMode(), m_name},
     m_window_size{m_window.getSize()},
-    m_board((m_window_size.x - m_window_size.y * 0.8f) / 2.0f, m_window_size.y / 8.0f * 0.8f, 8, 8)
+    m_board((m_window_size.x - m_window_size.y * 0.8f) / 2.0f, 50, m_window_size.y / 8.0f * 0.8f, 8, 8)
 {
 }
 
@@ -21,6 +21,14 @@ void Game::run()
             if (event.type == sf::Event::Closed)
             {
                 m_window.close();
+            }
+
+            if (event.type == sf::Event::MouseButtonPressed)
+            {
+                if (event.mouseButton.button == sf::Mouse::Left)
+                {
+                    m_board.updateSelected(event.mouseButton.x, event.mouseButton.y);
+                }
             }
         }
 

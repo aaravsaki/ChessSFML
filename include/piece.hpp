@@ -7,8 +7,14 @@ enum class Team {none, white, black};
 
 struct Coord
 {
-    int x;
-    int y;
+    int row;
+    int col;
+
+    bool operator==(const Coord&) const = default;
+    bool operator<(const Coord& other)
+    {
+        return (row < other.col || row == other.row && col < other.col);
+    }
 };
 
 class Piece
@@ -19,11 +25,12 @@ private:
     Coord m_pos{-1, -1};
 
 public:
-    Piece() = default;
+    Piece() = delete;
     Piece(PieceType piece_type, Team team, Coord position);
     Team getTeam() const;
     Coord getCoord() const;
-    virtual std::vector<Coord> getMoves(std::vector<std::vector<std::unique_ptr<Piece>>>) const = 0;
+    void setCoord(Coord destination);
+    virtual std::vector<Coord> getMoves(const std::vector<std::vector<std::unique_ptr<Piece>>>&) const = 0;
     virtual ~Piece() = default;
 
     sf::Sprite sprite;

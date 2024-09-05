@@ -14,3 +14,8 @@ Coord Piece::getCoord() const
 {
     return m_pos;
 }
+
+void Piece::setCoord(Coord destination)
+{
+    m_pos = destination;
+}

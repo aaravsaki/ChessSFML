@@ -7,7 +7,7 @@
 #include "queen.hpp"
 #include "rook.hpp"
 
-void Board::initialize_textures()
+void Board::initializeTextures()
 {
     sf::Texture wpawn;
     sf::Texture wrook;
@@ -23,53 +23,53 @@ void Board::initialize_textures()
     wking.loadFromFile("ChessAssets/w_king_1x_ns.png");
     wqueen.loadFromFile("ChessAssets/w_queen_1x_ns.png");
 
-    textures[PieceType::pawn] = wpawn;
-    textures[PieceType::rook] = wrook;
-    textures[PieceType::bishop] = wbishop;
-    textures[PieceType::knight] = wknight;
-    textures[PieceType::king] = wking;
-    textures[PieceType::queen] = wqueen;
+    m_textures[PieceType::pawn] = wpawn;
+    m_textures[PieceType::rook] = wrook;
+    m_textures[PieceType::bishop] = wbishop;
+    m_textures[PieceType::knight] = wknight;
+    m_textures[PieceType::king] = wking;
+    m_textures[PieceType::queen] = wqueen;
 }
 
-void Board::initialize_pieces()
+void Board::initializePieces()
 {
     for (int i = 0; i < m_cols; ++i)
     {
-        initialize_piece<Pawn>(PieceType::pawn, Coord{1, i}, Team::black);
-        initialize_piece<Pawn>(PieceType::pawn, Coord{6, i}, Team::white);
+        initializePiece<Pawn>(PieceType::pawn, Coord{1, i}, Team::black);
+        initializePiece<Pawn>(PieceType::pawn, Coord{6, i}, Team::white);
     }
 
-    initialize_piece<Rook>(PieceType::rook, Coord{0, 0}, Team::black);
-    initialize_piece<Rook>(PieceType::rook, Coord{0, 7}, Team::black);
+    initializePiece<Rook>(PieceType::rook, Coord{0, 0}, Team::black);
+    initializePiece<Rook>(PieceType::rook, Coord{0, 7}, Team::black);
 
-    initialize_piece<Rook>(PieceType::rook, Coord{7, 0}, Team::white);
-    initialize_piece<Rook>(PieceType::rook, Coord{7, 7}, Team::white);
+    initializePiece<Rook>(PieceType::rook, Coord{7, 0}, Team::white);
+    initializePiece<Rook>(PieceType::rook, Coord{7, 7}, Team::white);
 
-    initialize_piece<Knight>(PieceType::knight, Coord{0, 1}, Team::black);
-    initialize_piece<Knight>(PieceType::knight, Coord{0, 6}, Team::black);
+    initializePiece<Knight>(PieceType::knight, Coord{0, 1}, Team::black);
+    initializePiece<Knight>(PieceType::knight, Coord{0, 6}, Team::black);
 
-    initialize_piece<Knight>(PieceType::knight, Coord{7, 1}, Team::white);
-    initialize_piece<Knight>(PieceType::knight, Coord{7, 6}, Team::white);
+    initializePiece<Knight>(PieceType::knight, Coord{7, 1}, Team::white);
+    initializePiece<Knight>(PieceType::knight, Coord{7, 6}, Team::white);
 
-    initialize_piece<Bishop>(PieceType::bishop, Coord{0, 2}, Team::black);
-    initialize_piece<Bishop>(PieceType::bishop, Coord{0, 5}, Team::black);
+    initializePiece<Bishop>(PieceType::bishop, Coord{0, 2}, Team::black);
+    initializePiece<Bishop>(PieceType::bishop, Coord{0, 5}, Team::black);
 
-    initialize_piece<Bishop>(PieceType::bishop, Coord{7, 2}, Team::white);
-    initialize_piece<Bishop>(PieceType::bishop, Coord{7, 5}, Team::white);
+    initializePiece<Bishop>(PieceType::bishop, Coord{7, 2}, Team::white);
+    initializePiece<Bishop>(PieceType::bishop, Coord{7, 5}, Team::white);
 
-    initialize_piece<King>(PieceType::king, Coord{0, 4}, Team::black);
-    initialize_piece<King>(PieceType::king, Coord{7, 4}, Team::white);
+    initializePiece<King>(PieceType::king, Coord{0, 4}, Team::black);
+    initializePiece<King>(PieceType::king, Coord{7, 4}, Team::white);
 
-    initialize_piece<Queen>(PieceType::queen, Coord{0, 3}, Team::black);
-    initialize_piece<Queen>(PieceType::queen, Coord{7, 3}, Team::white);
+    initializePiece<Queen>(PieceType::queen, Coord{0, 3}, Team::black);
+    initializePiece<Queen>(PieceType::queen, Coord{7, 3}, Team::white);
 }
 
-Board::Board(float horizontal_offset, float tile_size, int rows, int cols)
-            : m_tile_size{tile_size}, m_rows{rows}, m_cols{cols}, m_horizontal_offset{horizontal_offset}, field(m_rows)
+Board::Board(float horizontal_offset, float vertical_offset, float tile_size, int rows, int cols)
+            : m_tile_size{tile_size}, m_rows{rows}, m_cols{cols}, m_horizontal_offset{horizontal_offset}, m_vertical_offset{vertical_offset}, m_field(m_rows)
 {
-    for (auto& row : field) row.resize(m_cols);
-    initialize_textures();
-    initialize_pieces();
+    for (auto& row : m_field) row.resize(m_cols);
+    initializeTextures();
+    initializePieces();
 }
 
 void Board::draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -80,32 +80,82 @@ void Board::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
         for (int col = 0; col < m_cols; ++col)
         {
-            tile.setPosition(col * m_tile_size + m_horizontal_offset, row * m_tile_size);
+            tile.setPosition(col * m_tile_size + m_horizontal_offset, row * m_tile_size + m_vertical_offset);
             tile.setFillColor((row + col) % 2 == 0 ? sf::Color(212, 182, 163) : sf::Color(48, 40, 35));
             tile.setOutlineColor(sf::Color::Black);
             target.draw(tile, states);
-            if (field[row][col]) target.draw(field[row][col]->sprite, states);
-
+            if (m_field[row][col]) target.draw(m_field[row][col]->sprite, states);
         }
     }
 
-    
-    //Drawing piece process
-    //sf::Sprite sprite;
-    //sprite.setTexture(pawn_img);
-    //sprite.setPosition(m_horizontal_offset, 0);
-    //sprite.setScale(m_tile_size * 0.8f / sprite.getLocalBounds().width, m_tile_size * 0.8f / sprite.getLocalBounds().height);
-    //sprite.move(m_tile_size * 0.1f, m_tile_size * 0.1f);
-    //target.draw(sprite, states);
+    if (m_selected_piece)
+    {
+        for (auto &[row, col] : m_selected_piece->getMoves(m_field))
+        {
+            tile.setPosition(col * m_tile_size + m_horizontal_offset, row * m_tile_size + m_vertical_offset);
+            tile.setFillColor(sf::Color(0, 0, 128));
+            tile.setOutlineColor(sf::Color::Black);
+            target.draw(tile, states);
+        }
+    }
 }
 
-// def magic function()
-//  if mouse pressed:
-//      get piece at mouse press
-//      await mouse release
-//      get piece at mouse release
-//      if can take, take
-//      if own piece, reset,
-//      if empty, move
-//      add additional checks for check/checkmate later
+Coord Board::calculatePosition(int x, int y)
+{
+    int row = std::floor((y - m_vertical_offset) / m_tile_size);
+    int col = std::floor((x - m_horizontal_offset) / m_tile_size);
+    return Coord{row, col};
+}
 
+void Board::updateSelected(int mouse_x, int mouse_y)
+{
+    Coord clicked_tile = calculatePosition(mouse_x, mouse_y);
+
+    if (clicked_tile.row < 0 || clicked_tile.col < 0 || clicked_tile.row > 7 || clicked_tile.col > 7)
+    {
+        m_selected_piece = nullptr;
+    }
+    else if (m_selected_piece)
+    {
+        std::vector<Coord> moves = m_selected_piece->getMoves(m_field);
+        if (std::find(moves.begin(), moves.end(), clicked_tile) == moves.end())
+        {
+            if (!m_field[clicked_tile.row][clicked_tile.col] || m_field[clicked_tile.row][clicked_tile.col]->getTeam() != m_selected_piece->getTeam())
+            {
+                m_selected_piece = nullptr;
+            }
+            else
+            {
+                m_selected_piece = m_field[clicked_tile.row][clicked_tile.col].get();
+            }
+        }
+        else
+        {
+            makeMove(m_selected_piece->getCoord(), clicked_tile);
+            m_selected_piece = nullptr;
+        }
+    }
+    else
+    {
+        m_selected_piece = m_field[clicked_tile.row][clicked_tile.col].get();
+    }
+}
+
+// Precondition: move is valid
+void Board::makeMove(Coord origin, Coord destination)
+{
+    m_field[destination.row][destination.col] = std::move(m_field[origin.row][origin.col]);
+    m_field[destination.row][destination.col]->setCoord(destination);
+    setTexturePos(destination.row, destination.col);
+}
+
+
+void Board::setTexturePos(int row, int col)
+{
+    m_field[row][col]->sprite.setPosition(col * m_tile_size + m_horizontal_offset, row * m_tile_size + m_vertical_offset);
+    m_field[row][col]->sprite.setScale(
+        m_tile_size * 0.8f / m_field[row][col]->sprite.getLocalBounds().width, 
+        m_tile_size * 0.8f / m_field[row][col]->sprite.getLocalBounds().height
+    );
+    m_field[row][col]->sprite.move(m_tile_size * 0.1f, m_tile_size * 0.1f);
+}

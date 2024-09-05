@@ -5,22 +5,22 @@ Slider::Slider(PieceType piece_type, Team team, Coord position)
 {
 }
 
-std::vector<Coord> Slider::getMoves(std::vector<std::vector<std::unique_ptr<Piece>>> field) const
+std::vector<Coord> Slider::getMoves(const std::vector<std::vector<std::unique_ptr<Piece>>>& field) const
 {
     std::vector<Coord> moves;
     Coord position = getCoord();
 
-    for (auto &[dx, dy] : directions)
+    for (auto &[dr, dc] : directions)
     {
-        for (int x = position.x, y = position.y; x>= 0 && x < field.size() && y >= 0 && y < field[0].size(); x += dx, y += dy)
+        for (int row = position.row + dr, col = position.col + dc; row >= 0 && row < field.size() && col >= 0 && col < field.size(); row += dr, col += dc)
         {
-            if (!field[x][y])
+            if (!field[row][col])
             {
-                moves.push_back(Coord{x, y});
+                moves.push_back(Coord{row, col});
             }
-            else if (field[x][y]->getTeam() != getTeam())
+            else if (field[row][col]->getTeam() != getTeam())
             {
-                moves.push_back(Coord{x, y});
+                moves.push_back(Coord{row, col});
                 break;
             }
             else
