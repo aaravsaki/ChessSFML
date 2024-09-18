@@ -1,5 +1,12 @@
 #pragma once
+#include "imgui.h"
+#include "imgui-SFML.h"
 #include "board.hpp"
+
+namespace Menu
+{
+    void ShowMenuWindow(bool* p_open, Board& board);
+}
 
 class Game
 {

@@ -43,5 +43,6 @@ public:
     void draw(sf::RenderTarget& target, sf::RenderStates states =sf::RenderStates()) const override;
     void updateSelected(int mouse_x, int mouse_y);
     void makeMove(Coord origin, Coord destination);
+    void resetBoard();
 };
 

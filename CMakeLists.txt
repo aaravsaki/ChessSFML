@@ -10,10 +10,34 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
 include(FetchContent)
-FetchContent_Declare(SFML
+
+FetchContent_Declare(
+    SFML
     GIT_REPOSITORY https://github.com/SFML/SFML.git
-    GIT_TAG 2.6.x)
+    GIT_TAG        2.6.x
+)
+
+FetchContent_Declare(
+  imgui
+  GIT_REPOSITORY https://github.com/ocornut/imgui.git
+  GIT_TAG        1dfbb100d6ca6e7d813102e979c07f66a56546bb
+)
+
+FetchContent_Declare(
+  imgui-sfml
+  GIT_REPOSITORY https://github.com/SFML/imgui-sfml.git
+  GIT_TAG        2.6.x
+)
+
+option(SFML_BUILD_AUDIO "Build audio" OFF)
+option(SFML_BUILD_NETWORK "Build network" OFF)
 FetchContent_MakeAvailable(SFML)
+
+FetchContent_MakeAvailable(imgui)
+
+set(IMGUI_DIR ${imgui_SOURCE_DIR})
+option(IMGUI_SFML_FIND_SFML "Use find_package to find SFML" OFF)
+FetchContent_MakeAvailable(imgui-sfml)
 
 add_executable(
     ${PROJECT_NAME} 
@@ -31,7 +55,7 @@ add_executable(
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(${PROJECT_NAME} PUBLIC sfml-graphics)
+target_link_libraries(${PROJECT_NAME} PUBLIC sfml-graphics ImGui-SFML::ImGui-SFML)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
 if(WIN32)

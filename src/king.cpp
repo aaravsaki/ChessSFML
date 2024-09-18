@@ -8,6 +8,7 @@ King::King(PieceType piece_type, Team team, Coord position)
 std::vector<Coord> King::getMoves(const std::vector<std::vector<std::unique_ptr<Piece>>>& field) const
 {
     std::vector<Coord> moves;
+
     std::vector<Coord> directions{
         Coord{1,1}, 
         Coord{1,0}, 
@@ -18,6 +19,7 @@ std::vector<Coord> King::getMoves(const std::vector<std::vector<std::unique_ptr<
         Coord{-1,0}, 
         Coord{-1,-1}
     };
+
     Coord position = getCoord();
 
     for (auto &[dr, dc] : directions)

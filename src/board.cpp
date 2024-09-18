@@ -93,7 +93,7 @@ void Board::draw(sf::RenderTarget& target, sf::RenderStates states) const
         for (auto &[row, col] : m_selected_piece->getMoves(m_field))
         {
             tile.setPosition(col * m_tile_size + m_horizontal_offset, row * m_tile_size + m_vertical_offset);
-            tile.setFillColor(sf::Color(0, 0, 128));
+            tile.setFillColor(sf::Color(0, 0, 128, 128));
             tile.setOutlineColor(sf::Color::Black);
             target.draw(tile, states);
         }
@@ -137,7 +137,14 @@ void Board::updateSelected(int mouse_x, int mouse_y)
     }
     else
     {
-        m_selected_piece = m_field[clicked_tile.row][clicked_tile.col].get();
+        if (m_field[clicked_tile.row][clicked_tile.col] && currentTurn == m_field[clicked_tile.row][clicked_tile.col]->getTeam())
+        {
+            m_selected_piece = m_field[clicked_tile.row][clicked_tile.col].get();
+        }
+        else
+        {
+            m_selected_piece = nullptr;
+        }
     }
 }
 
@@ -147,6 +154,8 @@ void Board::makeMove(Coord origin, Coord destination)
     m_field[destination.row][destination.col] = std::move(m_field[origin.row][origin.col]);
     m_field[destination.row][destination.col]->setCoord(destination);
     setTexturePos(destination.row, destination.col);
+    if (currentTurn == Team::white) currentTurn = Team::black;
+    else currentTurn = Team::white;
 }
 
 
@@ -158,4 +167,13 @@ void Board::setTexturePos(int row, int col)
         m_tile_size * 0.8f / m_field[row][col]->sprite.getLocalBounds().height
     );
     m_field[row][col]->sprite.move(m_tile_size * 0.1f, m_tile_size * 0.1f);
+}
+
+void Board::resetBoard()
+{
+    m_field.clear();
+    m_field.resize(m_rows);
+    for (auto& row : m_field) row.resize(m_cols);
+    initializePieces();
+    currentTurn = Team::white;
 }
