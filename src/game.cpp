@@ -12,6 +12,8 @@ namespace Menu
 
         ImGui::SeparatorText("Game Settings");
         if (ImGui::Button("Reset Board")) board.resetBoard();
+        ImGui::SeparatorText("Shortcuts");
+        if (ImGui::Button("Flip Board")); //board.flipBoard()
         //ImGui::PushItemWidth(ImGui::GetFontSize() * -12);
         //ImGui::PopItemWidth();
         ImGui::End();
