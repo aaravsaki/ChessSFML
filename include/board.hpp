@@ -1,10 +1,11 @@
 #pragma once
-#include <cmath>
-#include <SFML/Graphics.hpp>
 #include "piece.hpp"
+#include <SFML/Graphics.hpp>
 #include <map>
 #include <memory>
 #include <vector>
+#include <string_view>
+
 
 class Board : public sf::Drawable
 {
@@ -16,7 +17,8 @@ class Board : public sf::Drawable
     std::map<PieceType, sf::Texture> m_textures;
     std::vector<std::vector<std::unique_ptr<Piece>>> m_field;
     Piece* m_selected_piece = nullptr;
-    Team currentTurn{Team::white};
+    Piece* m_player_king;
+    Team m_current_turn{Team::white};
 
     void initializeTextures();
 
@@ -43,6 +45,8 @@ public:
     void draw(sf::RenderTarget& target, sf::RenderStates states =sf::RenderStates()) const override;
     void updateSelected(int mouse_x, int mouse_y);
     void makeMove(Coord origin, Coord destination);
+    void makeMove(std::string_view);
     void resetBoard();
+    void setCurrentTurn(Team team);
 };
 

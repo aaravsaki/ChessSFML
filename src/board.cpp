@@ -6,6 +6,7 @@
 #include "bishop.hpp"
 #include "queen.hpp"
 #include "rook.hpp"
+#include <cmath>
 
 void Board::initializeTextures()
 {
@@ -33,36 +34,57 @@ void Board::initializeTextures()
 
 void Board::initializePieces()
 {
-    for (int i = 0; i < m_cols; ++i)
+    Team team1 = Team::white;
+    Team team2 = Team::black;
+
+    if (m_current_turn == Team::black)
     {
-        initializePiece<Pawn>(PieceType::pawn, Coord{1, i}, Team::black);
-        initializePiece<Pawn>(PieceType::pawn, Coord{6, i}, Team::white);
+        std::swap(team1, team2);
+        initializePiece<King>(PieceType::king, Coord{0, 3}, team2);
+        initializePiece<King>(PieceType::king, Coord{7, 3}, team1);
+
+        initializePiece<Queen>(PieceType::queen, Coord{0, 4}, team2);
+        initializePiece<Queen>(PieceType::queen, Coord{7, 4}, team1);
+    }
+    else
+    {
+        initializePiece<King>(PieceType::king, Coord{0, 4}, team2);
+        initializePiece<King>(PieceType::king, Coord{7, 4}, team1);
+
+        initializePiece<Queen>(PieceType::queen, Coord{0, 3}, team2);
+        initializePiece<Queen>(PieceType::queen, Coord{7, 3}, team1);
     }
 
-    initializePiece<Rook>(PieceType::rook, Coord{0, 0}, Team::black);
-    initializePiece<Rook>(PieceType::rook, Coord{0, 7}, Team::black);
+    for (int i = 0; i < m_cols; ++i)
+    {
+        initializePiece<Pawn>(PieceType::pawn, Coord{1, i}, team2);
+        static_cast<Pawn*>(m_field[1][i].get())->dr = 1;
+        initializePiece<Pawn>(PieceType::pawn, Coord{6, i}, team1);
+        static_cast<Pawn*>(m_field[6][i].get())->dr = -1;
+    }
 
-    initializePiece<Rook>(PieceType::rook, Coord{7, 0}, Team::white);
-    initializePiece<Rook>(PieceType::rook, Coord{7, 7}, Team::white);
+    initializePiece<Rook>(PieceType::rook, Coord{0, 0}, team2);
+    initializePiece<Rook>(PieceType::rook, Coord{0, 7}, team2);
 
-    initializePiece<Knight>(PieceType::knight, Coord{0, 1}, Team::black);
-    initializePiece<Knight>(PieceType::knight, Coord{0, 6}, Team::black);
+    initializePiece<Rook>(PieceType::rook, Coord{7, 0}, team1);
+    initializePiece<Rook>(PieceType::rook, Coord{7, 7}, team1);
 
-    initializePiece<Knight>(PieceType::knight, Coord{7, 1}, Team::white);
-    initializePiece<Knight>(PieceType::knight, Coord{7, 6}, Team::white);
+    initializePiece<Knight>(PieceType::knight, Coord{0, 1}, team2);
+    initializePiece<Knight>(PieceType::knight, Coord{0, 6}, team2);
 
-    initializePiece<Bishop>(PieceType::bishop, Coord{0, 2}, Team::black);
-    initializePiece<Bishop>(PieceType::bishop, Coord{0, 5}, Team::black);
+    initializePiece<Knight>(PieceType::knight, Coord{7, 1}, team1);
+    initializePiece<Knight>(PieceType::knight, Coord{7, 6}, team1);
 
-    initializePiece<Bishop>(PieceType::bishop, Coord{7, 2}, Team::white);
-    initializePiece<Bishop>(PieceType::bishop, Coord{7, 5}, Team::white);
+    initializePiece<Bishop>(PieceType::bishop, Coord{0, 2}, team2);
+    initializePiece<Bishop>(PieceType::bishop, Coord{0, 5}, team2);
 
-    initializePiece<King>(PieceType::king, Coord{0, 4}, Team::black);
-    initializePiece<King>(PieceType::king, Coord{7, 4}, Team::white);
+    initializePiece<Bishop>(PieceType::bishop, Coord{7, 2}, team1);
+    initializePiece<Bishop>(PieceType::bishop, Coord{7, 5}, team1);
 
-    initializePiece<Queen>(PieceType::queen, Coord{0, 3}, Team::black);
-    initializePiece<Queen>(PieceType::queen, Coord{7, 3}, Team::white);
+
+    m_player_king = m_field[7][4].get();
 }
+
 
 Board::Board(float horizontal_offset, float vertical_offset, float tile_size, int rows, int cols)
             : m_tile_size{tile_size}, m_rows{rows}, m_cols{cols}, m_horizontal_offset{horizontal_offset}, m_vertical_offset{vertical_offset}, m_field(m_rows)
@@ -137,7 +159,7 @@ void Board::updateSelected(int mouse_x, int mouse_y)
     }
     else
     {
-        if (m_field[clicked_tile.row][clicked_tile.col] && currentTurn == m_field[clicked_tile.row][clicked_tile.col]->getTeam())
+        if (m_field[clicked_tile.row][clicked_tile.col] && m_current_turn == m_field[clicked_tile.row][clicked_tile.col]->getTeam())
         {
             m_selected_piece = m_field[clicked_tile.row][clicked_tile.col].get();
         }
@@ -153,11 +175,14 @@ void Board::makeMove(Coord origin, Coord destination)
 {
     m_field[destination.row][destination.col] = std::move(m_field[origin.row][origin.col]);
     m_field[destination.row][destination.col]->setCoord(destination);
+    if (m_field[destination.row][destination.col]->getPieceType() == PieceType::pawn)
+    {
+        static_cast<Pawn*>(m_field[destination.row][destination.col].get())->has_moved = true;
+    }
     setTexturePos(destination.row, destination.col);
-    if (currentTurn == Team::white) currentTurn = Team::black;
-    else currentTurn = Team::white;
+    if (m_current_turn == Team::white) m_current_turn = Team::black;
+    else m_current_turn = Team::white;
 }
-
 
 void Board::setTexturePos(int row, int col)
 {
@@ -169,11 +194,16 @@ void Board::setTexturePos(int row, int col)
     m_field[row][col]->sprite.move(m_tile_size * 0.1f, m_tile_size * 0.1f);
 }
 
+void Board::setCurrentTurn(Team team)
+{
+    m_current_turn = team;
+}
+
 void Board::resetBoard()
 {
     m_field.clear();
     m_field.resize(m_rows);
     for (auto& row : m_field) row.resize(m_cols);
     initializePieces();
-    currentTurn = Team::white;
+    m_current_turn = Team::white;
 }

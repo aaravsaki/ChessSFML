@@ -29,6 +29,7 @@ public:
     Piece(PieceType piece_type, Team team, Coord position);
     Team getTeam() const;
     Coord getCoord() const;
+    PieceType getPieceType() const;
     void setCoord(Coord destination);
     virtual std::vector<Coord> getMoves(const std::vector<std::vector<std::unique_ptr<Piece>>>&) const = 0;
     virtual ~Piece() = default;

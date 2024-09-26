@@ -11,9 +11,14 @@ namespace Menu
         }
 
         ImGui::SeparatorText("Game Settings");
-        if (ImGui::Button("Reset Board")) board.resetBoard();
+        if (ImGui::Button("Reset as White")) board.resetBoard();
+        ImGui::SameLine();
+        if (ImGui::Button("Reset as Black"))
+        {
+            board.setCurrentTurn(Team::black);
+            board.resetBoard();
+        }
         ImGui::SeparatorText("Shortcuts");
-        if (ImGui::Button("Flip Board")); //board.flipBoard()
         //ImGui::PushItemWidth(ImGui::GetFontSize() * -12);
         //ImGui::PopItemWidth();
         ImGui::End();

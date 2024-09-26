@@ -5,6 +5,11 @@ Piece::Piece(PieceType piece_type, Team team, Coord position)
 {
 }
 
+PieceType Piece::getPieceType() const
+{
+    return m_type;
+}
+
 Team Piece::getTeam() const
 {
     return m_team;
