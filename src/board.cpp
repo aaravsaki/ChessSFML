@@ -45,6 +45,7 @@ void Board::initializePieces()
 
         initializePiece<Queen>(PieceType::queen, Coord{0, 4}, team2);
         initializePiece<Queen>(PieceType::queen, Coord{7, 4}, team1);
+        m_player_king = m_field[7][3].get();
     }
     else
     {
@@ -53,6 +54,7 @@ void Board::initializePieces()
 
         initializePiece<Queen>(PieceType::queen, Coord{0, 3}, team2);
         initializePiece<Queen>(PieceType::queen, Coord{7, 3}, team1);
+        m_player_king = m_field[7][4].get();
     }
 
     for (int i = 0; i < m_cols; ++i)
@@ -82,7 +84,6 @@ void Board::initializePieces()
     initializePiece<Bishop>(PieceType::bishop, Coord{7, 5}, team1);
 
 
-    m_player_king = m_field[7][4].get();
 }
 
 
@@ -139,8 +140,8 @@ void Board::updateSelected(int mouse_x, int mouse_y)
     }
     else if (m_selected_piece)
     {
-        std::vector<Coord> moves = m_selected_piece->getMoves(m_field);
-        if (std::find(moves.begin(), moves.end(), clicked_tile) == moves.end())
+        std::set<Coord> moves = m_selected_piece->getMoves(m_field);
+        if (!moves.contains(clicked_tile))
         {
             if (!m_field[clicked_tile.row][clicked_tile.col] || m_field[clicked_tile.row][clicked_tile.col]->getTeam() != m_selected_piece->getTeam())
             {
@@ -182,6 +183,7 @@ void Board::makeMove(Coord origin, Coord destination)
     setTexturePos(destination.row, destination.col);
     if (m_current_turn == Team::white) m_current_turn = Team::black;
     else m_current_turn = Team::white;
+    player_in_check = playerInCheck();
 }
 
 void Board::setTexturePos(int row, int col)
@@ -206,4 +208,30 @@ void Board::resetBoard()
     for (auto& row : m_field) row.resize(m_cols);
     initializePieces();
     m_current_turn = Team::white;
+}
+
+std::set<Coord> Board::generateAttackedSquares() const
+{
+    std::set<Coord> attacked_squares;
+    std::set<Coord> temp;
+    Team player_team = m_player_king->getTeam();
+
+    for (auto& row : m_field)
+    {
+        for (auto& tile : row)
+       {
+            if (tile) temp = tile->getMoves(m_field);
+            attacked_squares.merge(temp);
+        }
+    }
+
+    return attacked_squares;
+}
+
+bool Board::playerInCheck() const
+{
+    Coord king_location = m_player_king->getCoord();
+    Team player_team = m_player_king->getTeam();
+    std::set<Coord> attacked_squares = generateAttackedSquares();
+    return attacked_squares.contains(king_location);
 }

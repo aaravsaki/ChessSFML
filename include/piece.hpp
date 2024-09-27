@@ -1,6 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
-#include <vector>
+#include <set>
 
 enum class PieceType {empty, pawn, knight, bishop, rook, queen, king};
 enum class Team {none, white, black};
@@ -10,11 +10,8 @@ struct Coord
     int row;
     int col;
 
-    bool operator==(const Coord&) const = default;
-    bool operator<(const Coord& other)
-    {
-        return (row < other.col || row == other.row && col < other.col);
-    }
+    auto operator<=>(const Coord&) const = default;
+
 };
 
 class Piece
@@ -31,7 +28,7 @@ public:
     Coord getCoord() const;
     PieceType getPieceType() const;
     void setCoord(Coord destination);
-    virtual std::vector<Coord> getMoves(const std::vector<std::vector<std::unique_ptr<Piece>>>&) const = 0;
+    virtual std::set<Coord> getMoves(const std::vector<std::vector<std::unique_ptr<Piece>>>&) const = 0;
     virtual ~Piece() = default;
 
     sf::Sprite sprite;

@@ -2,7 +2,7 @@
 
 namespace Menu
 {
-    void ShowMenuWindow(bool* p_open, Board& board)
+    void ShowMenuWindow(Board& board, bool* p_open = nullptr)
     {
         if (!ImGui::Begin("Menu", p_open))
         {
@@ -21,6 +21,42 @@ namespace Menu
         ImGui::SeparatorText("Shortcuts");
         //ImGui::PushItemWidth(ImGui::GetFontSize() * -12);
         //ImGui::PopItemWidth();
+        ImGui::End();
+    }
+
+    void ShowCheckWindow(Board& board, bool* p_open = nullptr)
+    {        
+        // Overlay window adapted from imgui demo
+
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+
+        int location = 1;
+        const float PAD = 10.0f;
+        const ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImVec2 work_pos = viewport->WorkPos;
+        ImVec2 work_size = viewport->WorkSize;
+        ImVec2 window_pos, window_pos_pivot;
+        window_pos.x = work_pos.x + work_size.x - PAD;
+        window_pos.y = work_pos.y + PAD;
+        window_pos_pivot.x = 1.0f;
+        window_pos_pivot.y = 0.0f;
+        ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+        ImGui::SetNextWindowBgAlpha(0.35f);
+
+        if (!ImGui::Begin("Example: Simple overlay", p_open, window_flags))
+        {
+            ImGui::End();
+            return;
+        }
+
+        if (board.player_in_check)
+        {
+            ImGui::Text("In Check");
+        }
+        else
+        {
+            ImGui::Text("Not in Check");
+        }   
         ImGui::End();
     }
 }
@@ -62,7 +98,8 @@ void Game::run()
             }
         }
         ImGui::SFML::Update(m_window, deltaClock.restart());
-        Menu::ShowMenuWindow(nullptr, m_board);
+        Menu::ShowMenuWindow(m_board);
+        Menu::ShowCheckWindow(m_board);
         //ImGui::ShowDemoWindow();
 
         m_window.clear(sf::Color(104, 40, 42));

@@ -39,6 +39,9 @@ class Board : public sf::Drawable
     // calculates the respective board coordinate
     Coord calculatePosition(int x, int y);
 
+    // Returns list of squares currently 'attacked' by computer's pieces
+    std::set<Coord> generateAttackedSquares() const;
+
 public:
     Board(float horizontal_offset, float vertical_offset, float tile_size, int rows, int cols);
     ~Board() = default;
@@ -47,6 +50,9 @@ public:
     void makeMove(Coord origin, Coord destination);
     void makeMove(std::string_view);
     void resetBoard();
+    bool playerInCheck() const;
     void setCurrentTurn(Team team);
+
+    bool player_in_check{false};
 };
 
