@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.28)
 project(ChessSFML LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -29,6 +29,13 @@ FetchContent_Declare(
   GIT_TAG        2.6.x
 )
 
+FetchContent_Declare(
+    boost
+    GIT_REPOSITORY https://github.com/boostorg/boost.git
+    GIT_TAG boost-1.86.0
+    EXCLUDE_FROM_ALL
+)
+
 option(SFML_BUILD_AUDIO "Build audio" OFF)
 option(SFML_BUILD_NETWORK "Build network" OFF)
 FetchContent_MakeAvailable(SFML)
@@ -38,6 +45,8 @@ FetchContent_MakeAvailable(imgui)
 set(IMGUI_DIR ${imgui_SOURCE_DIR})
 option(IMGUI_SFML_FIND_SFML "Use find_package to find SFML" OFF)
 FetchContent_MakeAvailable(imgui-sfml)
+
+FetchContent_MakeAvailable(boost)
 
 add_executable(
     ${PROJECT_NAME} 
@@ -52,10 +61,11 @@ add_executable(
     src/rook.cpp
     src/pawn.cpp
     src/game.cpp
+    src/uci.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(${PROJECT_NAME} PUBLIC sfml-graphics ImGui-SFML::ImGui-SFML)
+target_link_libraries(${PROJECT_NAME} PUBLIC sfml-graphics ImGui-SFML::ImGui-SFML Boost::process)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
 if(WIN32)

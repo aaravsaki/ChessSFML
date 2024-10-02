@@ -1,4 +1,5 @@
 #include "game.hpp"
+#include "uci.hpp"
 
 namespace Menu
 {
@@ -17,7 +18,9 @@ namespace Menu
         {
             board.setCurrentTurn(Team::black);
             board.resetBoard();
+            board.makeComputerMove();
         }
+        ImGui::SeparatorText("Computer Settings");
         ImGui::SeparatorText("Shortcuts");
         //ImGui::PushItemWidth(ImGui::GetFontSize() * -12);
         //ImGui::PopItemWidth();
@@ -27,7 +30,6 @@ namespace Menu
     void ShowCheckWindow(Board& board, bool* p_open = nullptr)
     {        
         // Overlay window adapted from imgui demo
-
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
 
         int location = 1;
@@ -56,8 +58,11 @@ namespace Menu
         else
         {
             ImGui::Text("Not in Check");
-        }   
+        }
+        ImGui::SeparatorText("Computer Moves");
+        ImGui::Text("%s ", board.cmmove.c_str());
         ImGui::End();
+        
     }
 }
 

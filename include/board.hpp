@@ -1,11 +1,11 @@
 #pragma once
 #include "piece.hpp"
+#include "uci.hpp"
 #include <SFML/Graphics.hpp>
 #include <map>
 #include <memory>
 #include <vector>
 #include <string_view>
-
 
 class Board : public sf::Drawable
 {
@@ -42,17 +42,27 @@ class Board : public sf::Drawable
     // Returns list of squares currently 'attacked' by computer's pieces
     std::set<Coord> generateAttackedSquares() const;
 
+    std::string coordToMove(Coord coord, Team viewing_as);
+
+    Coord moveToCoord(std::string move, Team viewing_as);
+
 public:
     Board(float horizontal_offset, float vertical_offset, float tile_size, int rows, int cols);
     ~Board() = default;
     void draw(sf::RenderTarget& target, sf::RenderStates states =sf::RenderStates()) const override;
     void updateSelected(int mouse_x, int mouse_y);
+    std::unique_ptr<Piece> silentMove(Coord origin, Coord destination);
+    void undoSilentMove(Coord origin, Coord destination, std::unique_ptr<Piece> original_piece);
     void makeMove(Coord origin, Coord destination);
     void makeMove(std::string_view);
+    void makeComputerMove();
     void resetBoard();
     bool playerInCheck() const;
     void setCurrentTurn(Team team);
-
     bool player_in_check{false};
+
+    std::vector<std::string> move_list;
+    Computer computer;
+    std::string cmmove;
 };
 

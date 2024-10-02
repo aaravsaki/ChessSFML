@@ -7,6 +7,7 @@
 #include "queen.hpp"
 #include "rook.hpp"
 #include <cmath>
+#include <string>
 
 void Board::initializeTextures()
 {
@@ -133,42 +134,88 @@ Coord Board::calculatePosition(int x, int y)
 void Board::updateSelected(int mouse_x, int mouse_y)
 {
     Coord clicked_tile = calculatePosition(mouse_x, mouse_y);
-
+    Piece* clicked_piece = m_field[clicked_tile.row][clicked_tile.col].get();
+    
+    // Clicked out of bounds
     if (clicked_tile.row < 0 || clicked_tile.col < 0 || clicked_tile.row > 7 || clicked_tile.col > 7)
     {
         m_selected_piece = nullptr;
     }
+
+    // Clicked when piece already selected
     else if (m_selected_piece)
     {
         std::set<Coord> moves = m_selected_piece->getMoves(m_field);
         if (!moves.contains(clicked_tile))
         {
-            if (!m_field[clicked_tile.row][clicked_tile.col] || m_field[clicked_tile.row][clicked_tile.col]->getTeam() != m_selected_piece->getTeam())
+            // Clicking enemy team piece that is out of range
+            if (!clicked_piece || clicked_piece->getTeam() != m_selected_piece->getTeam())
             {
                 m_selected_piece = nullptr;
             }
+
+            // Clicking different friendly piece
             else
             {
-                m_selected_piece = m_field[clicked_tile.row][clicked_tile.col].get();
+                m_selected_piece = clicked_piece;
             }
         }
+
+        // Clicked valid move tile
         else
         {
-            makeMove(m_selected_piece->getCoord(), clicked_tile);
+            Coord origin = m_selected_piece->getCoord();
+            std::unique_ptr<Piece> temp = std::move(silentMove(origin, clicked_tile));
+            bool still_checked = playerInCheck();
+            undoSilentMove(origin, clicked_tile, std::move(temp));
+            if (!still_checked) 
+            {
+                std::string player_move = coordToMove(origin, m_player_king->getTeam()) + coordToMove(clicked_tile, m_player_king->getTeam());
+                makeMove(origin, clicked_tile);
+                move_list.push_back(player_move);
+                cmmove += player_move + " ";
+                makeComputerMove();
+            }
             m_selected_piece = nullptr;
         }
     }
     else
     {
-        if (m_field[clicked_tile.row][clicked_tile.col] && m_current_turn == m_field[clicked_tile.row][clicked_tile.col]->getTeam())
+        if (clicked_piece && m_current_turn == clicked_piece->getTeam())
         {
-            m_selected_piece = m_field[clicked_tile.row][clicked_tile.col].get();
+            m_selected_piece = clicked_piece;
         }
         else
         {
             m_selected_piece = nullptr;
         }
     }
+}
+
+void Board::makeComputerMove()
+{
+    std::string computer_move = computer.calculateBestMove(move_list); cmmove += computer_move + " ";
+    Coord comp_origin = moveToCoord(computer_move.substr(0, 2), m_player_king->getTeam());
+    Coord comp_destination = moveToCoord(computer_move.substr(2), m_player_king->getTeam());
+    makeMove(comp_origin, comp_destination);
+    move_list.push_back(computer_move);
+}
+
+// 'Silently' moves a piece, returning the taken piece if there was one
+// or nullptr otherwise, so that the move can be undone
+std::unique_ptr<Piece> Board::silentMove(Coord origin, Coord destination)
+{
+    std::unique_ptr<Piece> temp = std::move(m_field[destination.row][destination.col]);
+    m_field[destination.row][destination.col] = std::move(m_field[origin.row][origin.col]);
+    m_field[destination.row][destination.col]->setCoord(destination);
+    return temp;
+}
+
+void Board::undoSilentMove(Coord origin, Coord destination, std::unique_ptr<Piece> original_piece)
+{
+    m_field[origin.row][origin.col] = std::move(m_field[destination.row][destination.col]);
+    m_field[origin.row][origin.col]->setCoord(origin);
+    m_field[destination.row][destination.col] = std::move(original_piece);
 }
 
 // Precondition: move is valid
@@ -185,7 +232,6 @@ void Board::makeMove(Coord origin, Coord destination)
     else m_current_turn = Team::white;
     player_in_check = playerInCheck();
 }
-
 void Board::setTexturePos(int row, int col)
 {
     m_field[row][col]->sprite.setPosition(col * m_tile_size + m_horizontal_offset, row * m_tile_size + m_vertical_offset);
@@ -204,6 +250,7 @@ void Board::setCurrentTurn(Team team)
 void Board::resetBoard()
 {
     m_field.clear();
+    move_list.clear();
     m_field.resize(m_rows);
     for (auto& row : m_field) row.resize(m_cols);
     initializePieces();
@@ -216,15 +263,14 @@ std::set<Coord> Board::generateAttackedSquares() const
     std::set<Coord> temp;
     Team player_team = m_player_king->getTeam();
 
-    for (auto& row : m_field)
+    for (const auto& row : m_field)
     {
-        for (auto& tile : row)
+        for (const auto& tile : row)
        {
             if (tile) temp = tile->getMoves(m_field);
             attacked_squares.merge(temp);
         }
     }
-
     return attacked_squares;
 }
 
@@ -234,4 +280,26 @@ bool Board::playerInCheck() const
     Team player_team = m_player_king->getTeam();
     std::set<Coord> attacked_squares = generateAttackedSquares();
     return attacked_squares.contains(king_location);
+}
+
+std::string Board::coordToMove(Coord coord, Team viewing_as)
+{
+    std::string move;
+    if (viewing_as == Team::white)
+    {
+        move += char('a' + coord.col);
+        move += std::to_string(8 - coord.row );
+    }
+    return move;
+}
+
+Coord Board::moveToCoord(std::string move, Team viewing_as)
+{
+    int row, col;
+    if (viewing_as == Team::white)
+    {
+        row = 8 - std::stoi(move.substr(1));
+        col = move[0] - 'a';
+    }
+    return Coord{row, col};
 }

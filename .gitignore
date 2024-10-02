@@ -5,3 +5,5 @@ out
 .vs
 .vscode
 imgui.ini
+_deps/
+CMakeFiles/
