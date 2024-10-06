@@ -84,7 +84,6 @@ void Board::initializePieces()
     initializePiece<Bishop>(PieceType::bishop, Coord{7, 2}, team1);
     initializePiece<Bishop>(PieceType::bishop, Coord{7, 5}, team1);
 
-
 }
 
 
@@ -145,7 +144,7 @@ void Board::updateSelected(int mouse_x, int mouse_y)
     // Clicked when piece already selected
     else if (m_selected_piece)
     {
-        std::set<Coord> moves = m_selected_piece->getMoves(m_field);
+        std::unordered_set<Coord> moves = m_selected_piece->getMoves(m_field);
         if (!moves.contains(clicked_tile))
         {
             // Clicking enemy team piece that is out of range
@@ -170,7 +169,7 @@ void Board::updateSelected(int mouse_x, int mouse_y)
             undoSilentMove(origin, clicked_tile, std::move(temp));
             if (!still_checked) 
             {
-                std::string player_move = coordToMove(origin, m_player_king->getTeam()) + coordToMove(clicked_tile, m_player_king->getTeam());
+                std::string player_move = coordToMove(origin) + coordToMove(clicked_tile);
                 makeMove(origin, clicked_tile);
                 move_list.push_back(player_move);
                 cmmove += player_move + " ";
@@ -195,8 +194,8 @@ void Board::updateSelected(int mouse_x, int mouse_y)
 void Board::makeComputerMove()
 {
     std::string computer_move = computer.calculateBestMove(move_list); cmmove += computer_move + " ";
-    Coord comp_origin = moveToCoord(computer_move.substr(0, 2), m_player_king->getTeam());
-    Coord comp_destination = moveToCoord(computer_move.substr(2), m_player_king->getTeam());
+    Coord comp_origin = moveToCoord(computer_move.substr(0, 2));
+    Coord comp_destination = moveToCoord(computer_move.substr(2));
     makeMove(comp_origin, comp_destination);
     move_list.push_back(computer_move);
 }
@@ -257,18 +256,18 @@ void Board::resetBoard()
     m_current_turn = Team::white;
 }
 
-std::set<Coord> Board::generateAttackedSquares() const
+std::unordered_set<Coord> Board::generateAttackedSquares() const
 {
-    std::set<Coord> attacked_squares;
-    std::set<Coord> temp;
+    std::unordered_set<Coord> attacked_squares;
+    std::unordered_set<Coord> piece_threats;
     Team player_team = m_player_king->getTeam();
 
     for (const auto& row : m_field)
     {
         for (const auto& tile : row)
        {
-            if (tile) temp = tile->getMoves(m_field);
-            attacked_squares.merge(temp);
+            if (tile) piece_threats = tile->getMoves(m_field);
+            attacked_squares.merge(piece_threats);
         }
     }
     return attacked_squares;
@@ -278,28 +277,38 @@ bool Board::playerInCheck() const
 {
     Coord king_location = m_player_king->getCoord();
     Team player_team = m_player_king->getTeam();
-    std::set<Coord> attacked_squares = generateAttackedSquares();
+    std::unordered_set<Coord> attacked_squares = generateAttackedSquares();
     return attacked_squares.contains(king_location);
 }
 
-std::string Board::coordToMove(Coord coord, Team viewing_as)
+std::string Board::coordToMove(Coord coord)
 {
     std::string move;
-    if (viewing_as == Team::white)
+    if (m_player_king->getTeam() == Team::white)
     {
         move += char('a' + coord.col);
-        move += std::to_string(8 - coord.row );
+        move += std::to_string(8 - coord.row);
+    }
+    else
+    {
+        move += char('h' - coord.col);
+        move += std::to_string(coord.row + 1);
     }
     return move;
 }
 
-Coord Board::moveToCoord(std::string move, Team viewing_as)
+Coord Board::moveToCoord(std::string move)
 {
     int row, col;
-    if (viewing_as == Team::white)
+    if (m_player_king->getTeam() == Team::white)
     {
         row = 8 - std::stoi(move.substr(1));
         col = move[0] - 'a';
+    }
+    else
+    {
+        row = std::stoi(move.substr(1)) - 1;
+        col = 'h' - move[0];
     }
     return Coord{row, col};
 }

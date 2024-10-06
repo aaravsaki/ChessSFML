@@ -12,7 +12,11 @@ namespace Menu
         }
 
         ImGui::SeparatorText("Game Settings");
-        if (ImGui::Button("Reset as White")) board.resetBoard();
+        if (ImGui::Button("Reset as White")) 
+        {
+            board.setCurrentTurn(Team::white);
+            board.resetBoard();
+        }
         ImGui::SameLine();
         if (ImGui::Button("Reset as Black"))
         {
@@ -81,7 +85,7 @@ void Game::draw_all()
 void Game::run()
 {    
     m_window.setFramerateLimit(60);
-    ImGui::SFML::Init(m_window);
+    int err = ImGui::SFML::Init(m_window); // return later
     sf::Clock deltaClock;
 
     while (m_window.isOpen())

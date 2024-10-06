@@ -5,9 +5,9 @@ Pawn::Pawn(PieceType piece_type, Team team, Coord position)
 {
 }
 
-std::set<Coord> Pawn::getMoves(const std::vector<std::vector<std::unique_ptr<Piece>>>& field) const
+std::unordered_set<Coord> Pawn::getMoves(const std::vector<std::vector<std::unique_ptr<Piece>>>& field) const
 {
-    std::set<Coord> moves;
+    std::unordered_set<Coord> moves;
     Coord position = getCoord();
     
     // Sliding moves (1 or 2 spaces forward)

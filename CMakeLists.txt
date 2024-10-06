@@ -65,7 +65,7 @@ add_executable(
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(${PROJECT_NAME} PUBLIC sfml-graphics ImGui-SFML::ImGui-SFML Boost::process)
+target_link_libraries(${PROJECT_NAME} PUBLIC sfml-graphics ImGui-SFML::ImGui-SFML Boost::process Boost::functional)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
 if(WIN32)

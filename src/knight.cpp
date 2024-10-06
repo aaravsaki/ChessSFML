@@ -5,10 +5,10 @@ Knight::Knight(PieceType piece_type, Team team, Coord position)
 {
 }
 
-std::set<Coord> Knight::getMoves(const std::vector<std::vector<std::unique_ptr<Piece>>>& field) const
+std::unordered_set<Coord> Knight::getMoves(const std::vector<std::vector<std::unique_ptr<Piece>>>& field) const
 {
     auto [row, col] = getCoord();
-    std::set<Coord> moves;
+    std::unordered_set<Coord> moves;
     for (auto &[dr, dc] : directions)
     {
         if (

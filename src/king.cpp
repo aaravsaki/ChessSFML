@@ -5,9 +5,9 @@ King::King(PieceType piece_type, Team team, Coord position)
 {
 }
 
-std::set<Coord> King::getMoves(const std::vector<std::vector<std::unique_ptr<Piece>>>& field) const
+std::unordered_set<Coord> King::getMoves(const std::vector<std::vector<std::unique_ptr<Piece>>>& field) const
 {
-    std::set<Coord> moves;
+    std::unordered_set<Coord> moves;
 
     std::vector<Coord> directions{
         Coord{1,1}, 
