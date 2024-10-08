@@ -77,6 +77,8 @@ public:
 
     bool playerInCheck() const;
 
+    bool playerInCheckmate() const;
+
     void setCurrentTurn(Team team);
     
     void updateTurn();

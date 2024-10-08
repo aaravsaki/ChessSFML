@@ -1,5 +1,4 @@
 #include "game.hpp"
-#include "uci.hpp"
 
 namespace Menu
 {
@@ -63,7 +62,7 @@ namespace Menu
         {
             ImGui::Text("Not in Check");
         }
-        ImGui::SeparatorText("Computer Moves");
+        ImGui::SeparatorText("Move List");
         ImGui::Text("%s ", board.cmmove.c_str());
         ImGui::End();
         

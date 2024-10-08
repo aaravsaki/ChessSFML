@@ -8,7 +8,7 @@
 #include "rook.hpp"
 #include <cmath>
 #include <string>
-#include <iostream>
+#include <string_view>
 
 void Board::initializeTextures()
 {
@@ -187,7 +187,6 @@ void Board::updateSelected(int mouse_x, int mouse_y)
             {
                 std::string player_move = coordToMove(origin) + coordToMove(clicked_tile); makeMove(origin, clicked_tile);
                 move_list.push_back(player_move);
-                cmmove += player_move + " ";
                 updateTurn();
                 makeComputerMove();
                 updateTurn();
@@ -207,12 +206,39 @@ void Board::updateSelected(int mouse_x, int mouse_y)
 
 void Board::makeComputerMove()
 {
-    std::string computer_move = computer.calculateBestMove(move_list); cmmove += computer_move + " ";
+    std::string computer_move = computer.calculateBestMove(move_list); 
+    cmmove += computer_move + "\n";
+
+    constexpr int ROOKLEFT_COL = 0;
+    constexpr int ROOKRIGHT_COL = 7;
+    constexpr std::string_view BLACK_KINGSIDE{"e8g8"};
+    constexpr std::string_view BLACK_QUEENSIDE{"e8c8"};
+    constexpr std::string_view WHITE_KINGSIDE{"e1g1"};
+    constexpr std::string_view WHITE_QUEENSIDE{"e1c1"};
+
     Coord comp_origin = moveToCoord(computer_move.substr(0, 2));
     Coord comp_destination = moveToCoord(computer_move.substr(2));
+    Piece* moving_piece = m_field[comp_origin.row][comp_origin.col].get();
+
+
+    if (moving_piece->getPieceType() == PieceType::king)
+    {
+        if (computer_move == BLACK_QUEENSIDE || computer_move == WHITE_KINGSIDE)
+        {
+            castle(comp_origin, Coord{comp_origin.row, ROOKLEFT_COL});
+            return;
+        }
+        else if (computer_move == BLACK_KINGSIDE || computer_move == WHITE_QUEENSIDE)
+        {
+            castle(comp_origin, Coord{comp_origin.row, ROOKRIGHT_COL});
+            return;
+        }
+    }
+
     makeMove(comp_origin, comp_destination);
     move_list.push_back(computer_move);
 }
+
 
 // 'Silently' moves a piece, returning the taken piece if there was one
 // or nullptr otherwise, so that the move can be undone
