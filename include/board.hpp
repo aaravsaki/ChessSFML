@@ -6,6 +6,7 @@
 #include <memory>
 #include <vector>
 #include <string_view>
+#include <unordered_map>
 
 class Board : public sf::Drawable
 {
@@ -43,9 +44,15 @@ class Board : public sf::Drawable
     // Returns list of squares currently 'attacked' by computer's pieces
     std::unordered_set<Coord> generateAttackedSquares() const;
 
+    bool castlePossible(const Coord& king_current_tile, const Coord& rook_current_tile) const;
+
     std::string coordToMove(Coord coord);
 
     Coord moveToCoord(std::string move);
+
+    std::unordered_map<Coord, Coord> getCastleMoves(const Coord& king_current_tile) const;
+
+    void castle(const Coord& king_current_tile, const Coord& rook_current_tile);
 
 public:
     Board(float horizontal_offset, float vertical_offset, float tile_size, int rows, int cols);
@@ -71,6 +78,8 @@ public:
     bool playerInCheck() const;
 
     void setCurrentTurn(Team team);
+    
+    void updateTurn();
 
     bool player_in_check{false};
 

@@ -1,6 +1,6 @@
 #include "board.hpp"
 #include "piece.hpp"
-#include "pawn.hpp"
+#include "pawn.hpp" 
 #include "knight.hpp"
 #include "king.hpp"
 #include "bishop.hpp"
@@ -8,6 +8,7 @@
 #include "rook.hpp"
 #include <cmath>
 #include <string>
+#include <iostream>
 
 void Board::initializeTextures()
 {
@@ -21,8 +22,7 @@ void Board::initializeTextures()
     wpawn.loadFromFile("ChessAssets/w_pawn_1x_ns.png");
     wrook.loadFromFile("ChessAssets/w_rook_1x_ns.png");
     wbishop.loadFromFile("ChessAssets/w_bishop_1x_ns.png");
-    wknight.loadFromFile("ChessAssets/w_knight_1x_ns.png");
-    wking.loadFromFile("ChessAssets/w_king_1x_ns.png");
+    wknight.loadFromFile("ChessAssets/w_knight_1x_ns.png"); wking.loadFromFile("ChessAssets/w_king_1x_ns.png");
     wqueen.loadFromFile("ChessAssets/w_queen_1x_ns.png");
 
     m_textures[PieceType::pawn] = wpawn;
@@ -120,6 +120,19 @@ void Board::draw(sf::RenderTarget& target, sf::RenderStates states) const
             tile.setOutlineColor(sf::Color::Black);
             target.draw(tile, states);
         }
+
+        if (m_selected_piece->getPieceType() == PieceType::king)
+        {
+            for (auto& it : getCastleMoves(m_selected_piece->getCoord()))
+            {
+                int row = it.first.row;
+                int col = it.first.col;
+                tile.setPosition(col * m_tile_size + m_horizontal_offset, row * m_tile_size + m_vertical_offset);
+                tile.setFillColor(sf::Color(0, 0, 128, 128));
+                tile.setOutlineColor(sf::Color::Black);
+                target.draw(tile, states);
+            }
+        }
     }
 }
 
@@ -136,30 +149,32 @@ void Board::updateSelected(int mouse_x, int mouse_y)
     Piece* clicked_piece = m_field[clicked_tile.row][clicked_tile.col].get();
     
     // Clicked out of bounds
-    if (clicked_tile.row < 0 || clicked_tile.col < 0 || clicked_tile.row > 7 || clicked_tile.col > 7)
-    {
-        m_selected_piece = nullptr;
-    }
+    if (clicked_tile.row < 0 || clicked_tile.col < 0 || clicked_tile.row > 7 || clicked_tile.col > 7) { m_selected_piece = nullptr; }
 
-    // Clicked when piece already selected
+    // Clicked with piece already selected
     else if (m_selected_piece)
     {
         std::unordered_set<Coord> moves = m_selected_piece->getMoves(m_field);
-        if (!moves.contains(clicked_tile))
+        std::unordered_map<Coord, Coord> castle_moves;
+        Coord current_piece_tile = m_selected_piece->getCoord();
+
+        if (m_selected_piece->getPieceType() == PieceType::king) { castle_moves = getCastleMoves(current_piece_tile); }
+        
+        if (!moves.contains(clicked_tile) && !castle_moves.contains(clicked_tile))
         {
             // Clicking enemy team piece that is out of range
-            if (!clicked_piece || clicked_piece->getTeam() != m_selected_piece->getTeam())
-            {
-                m_selected_piece = nullptr;
-            }
+            if (!clicked_piece || clicked_piece->getTeam() != m_selected_piece->getTeam()) { m_selected_piece = nullptr; }
 
             // Clicking different friendly piece
-            else
-            {
-                m_selected_piece = clicked_piece;
-            }
+            else { m_selected_piece = clicked_piece; }
         }
-
+        else if (castle_moves.contains(clicked_tile))
+        {
+            castle(m_selected_piece->getCoord(), castle_moves[clicked_tile]);
+            updateTurn();
+            makeComputerMove();
+            updateTurn();
+        }
         // Clicked valid move tile
         else
         {
@@ -167,27 +182,26 @@ void Board::updateSelected(int mouse_x, int mouse_y)
             std::unique_ptr<Piece> temp = std::move(silentMove(origin, clicked_tile));
             bool still_checked = playerInCheck();
             undoSilentMove(origin, clicked_tile, std::move(temp));
+
             if (!still_checked) 
             {
-                std::string player_move = coordToMove(origin) + coordToMove(clicked_tile);
-                makeMove(origin, clicked_tile);
+                std::string player_move = coordToMove(origin) + coordToMove(clicked_tile); makeMove(origin, clicked_tile);
                 move_list.push_back(player_move);
                 cmmove += player_move + " ";
+                updateTurn();
                 makeComputerMove();
+                updateTurn();
             }
+
             m_selected_piece = nullptr;
         }
     }
+    // Clicked in bounds with no piece already selected
     else
     {
-        if (clicked_piece && m_current_turn == clicked_piece->getTeam())
-        {
-            m_selected_piece = clicked_piece;
-        }
-        else
-        {
-            m_selected_piece = nullptr;
-        }
+        if (clicked_piece && m_current_turn == clicked_piece->getTeam()) { m_selected_piece = clicked_piece; }
+
+        else { m_selected_piece = nullptr; }
     }
 }
 
@@ -217,20 +231,99 @@ void Board::undoSilentMove(Coord origin, Coord destination, std::unique_ptr<Piec
     m_field[destination.row][destination.col] = std::move(original_piece);
 }
 
+
+bool Board::castlePossible(const Coord& king_current_tile, const Coord& rook_current_tile) const
+{
+    Piece* king = m_field[king_current_tile.row][king_current_tile.col].get();
+    Piece* rook = m_field[rook_current_tile.row][rook_current_tile.col].get();
+
+    if (king->has_moved || rook->has_moved) return false;
+
+    std::unordered_set<Coord> attacked_squares = generateAttackedSquares();
+    if (attacked_squares.contains(king_current_tile)) { return false; }
+    int castle_row = king_current_tile.row;
+
+    int king_dc = 1;
+    if (rook_current_tile.col < king_current_tile.col) { king_dc = -1; }
+    int destination_col = king_current_tile.col + 2 * king_dc;
+
+    for (int col = king_current_tile.col + king_dc; col != destination_col + king_dc; col += king_dc)
+    {
+        if (attacked_squares.contains(Coord{castle_row, col})) { 
+            return false; 
+        }
+    }
+
+    int rook_dc = 1;
+    if (rook_current_tile.col > king_current_tile.col) { rook_dc = -1; }
+
+    for (int col = rook_current_tile.col + rook_dc; col != king_current_tile.col; col += rook_dc)
+    {
+        if (m_field[castle_row][col]) { return false; }
+    }
+
+    return true;
+}
+
+std::unordered_map<Coord, Coord> Board::getCastleMoves(const Coord& king_current_tile) const
+{
+    std::unordered_map<Coord, Coord> castle_moves;
+    constexpr int ROOK1_COL = 7;
+    constexpr int ROOK2_COL = 0;
+    constexpr int KING_CASTLE_JUMP = 2;
+    Coord rook1_tile{king_current_tile.row, ROOK1_COL};
+    Coord rook2_tile{king_current_tile.row, ROOK2_COL};
+
+
+    if (m_field[king_current_tile.row][ROOK1_COL] && m_field[king_current_tile.row][ROOK1_COL]->getPieceType() == PieceType::rook && castlePossible(king_current_tile, rook1_tile))
+    {
+        castle_moves[Coord{king_current_tile.row, king_current_tile.col + KING_CASTLE_JUMP}] = rook1_tile;
+    }
+
+    if (m_field[king_current_tile.row][ROOK2_COL] && m_field[king_current_tile.row][ROOK2_COL]->getPieceType() == PieceType::rook && castlePossible(king_current_tile, rook2_tile))
+    {
+        castle_moves[Coord{king_current_tile.row, king_current_tile.col - KING_CASTLE_JUMP}] = rook2_tile;
+    }
+
+    return castle_moves;
+}
+
+void Board::castle(const Coord& king_current_tile, const Coord& rook_current_tile)
+{
+    int dc = 1;
+    if (king_current_tile.col > rook_current_tile.col) { dc = -1; }
+
+    Coord king_destination{king_current_tile.row, king_current_tile.col + 2 * dc};
+    makeMove(king_current_tile, king_destination);
+
+    Coord rook_destination{rook_current_tile.row, king_current_tile.col + dc};
+    makeMove(rook_current_tile, rook_destination);
+
+    std::string castle_move = coordToMove(king_current_tile) + coordToMove(king_destination);
+    move_list.push_back(castle_move);
+}
+
 // Precondition: move is valid
 void Board::makeMove(Coord origin, Coord destination)
 {
     m_field[destination.row][destination.col] = std::move(m_field[origin.row][origin.col]);
     m_field[destination.row][destination.col]->setCoord(destination);
+    m_field[destination.row][destination.col]->has_moved = true;
+    m_field[origin.row][origin.col] = nullptr;
     if (m_field[destination.row][destination.col]->getPieceType() == PieceType::pawn)
     {
         static_cast<Pawn*>(m_field[destination.row][destination.col].get())->has_moved = true;
     }
     setTexturePos(destination.row, destination.col);
+}
+
+void Board::updateTurn()
+{
     if (m_current_turn == Team::white) m_current_turn = Team::black;
     else m_current_turn = Team::white;
     player_in_check = playerInCheck();
 }
+
 void Board::setTexturePos(int row, int col)
 {
     m_field[row][col]->sprite.setPosition(col * m_tile_size + m_horizontal_offset, row * m_tile_size + m_vertical_offset);
@@ -266,7 +359,7 @@ std::unordered_set<Coord> Board::generateAttackedSquares() const
     {
         for (const auto& tile : row)
        {
-            if (tile) piece_threats = tile->getMoves(m_field);
+            if (tile && tile->getTeam() != player_team) piece_threats = tile->getMoves(m_field);
             attacked_squares.merge(piece_threats);
         }
     }
