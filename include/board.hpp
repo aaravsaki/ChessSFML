@@ -19,6 +19,7 @@ class Board : public sf::Drawable
     std::vector<std::vector<std::unique_ptr<Piece>>> m_field;
     Piece* m_selected_piece = nullptr;
     Piece* m_player_king;
+    Piece* m_computer_king;
     Team m_current_turn{Team::white};
 
     void initializeTextures();
@@ -42,7 +43,7 @@ class Board : public sf::Drawable
     Coord calculatePosition(int x, int y);
 
     // Returns list of squares currently 'attacked' by computer's pieces
-    std::unordered_set<Coord> generateAttackedSquares() const;
+    std::unordered_set<Coord> generateAttackedSquares(Team attacker) const;
 
     bool castlePossible(const Coord& king_current_tile, const Coord& rook_current_tile) const;
 
@@ -77,13 +78,23 @@ public:
 
     bool playerInCheck() const;
 
-    bool playerInCheckmate() const;
+    bool playerInCheckmate();
+
+    bool computerInCheck() const;
+
+    bool computerInCheckmate();
+
+    bool gameOver();
 
     void setCurrentTurn(Team team);
     
     void updateTurn();
 
+    bool game_over{false};
     bool player_in_check{false};
+    bool player_in_checkmate{false};
+    bool computer_in_check{false};
+    bool computer_in_checkmate{false};
 
     std::vector<std::string> move_list;
 

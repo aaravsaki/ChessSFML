@@ -7,7 +7,7 @@ Computer::Computer()
     m_engine.detach();
 }
 
-bool Computer::send(std::string_view message)
+bool Computer::send(std::string_view message) 
 {
     m_engine_receiver << message << std::endl;
     return m_engine_receiver.good();
@@ -47,12 +47,12 @@ std::string Computer::calculateBestMove(std::vector<std::string> move_list, int 
     send(position);
     sendAndReceive("isready", "readyok");
     send("go depth 20");
+
     for (std::string line; std::getline(m_engine_output, line); await_lines--)
     {
         std::cout << line << std::endl;
         auto it = line.find("bestmove");
-        if (it != line.npos)
-        {
+        if (it != line.npos) {
 
             std::cout << line.substr(9, 4);
             return line.substr(9, 4);

@@ -47,6 +47,7 @@ void Board::initializePieces()
         initializePiece<Queen>(PieceType::queen, Coord{0, 4}, team2);
         initializePiece<Queen>(PieceType::queen, Coord{7, 4}, team1);
         m_player_king = m_field[7][3].get();
+        m_computer_king = m_field[0][3].get();
     }
     else
     {
@@ -56,6 +57,7 @@ void Board::initializePieces()
         initializePiece<Queen>(PieceType::queen, Coord{0, 3}, team2);
         initializePiece<Queen>(PieceType::queen, Coord{7, 3}, team1);
         m_player_king = m_field[7][4].get();
+        m_computer_king = m_field[0][4].get();
     }
 
     for (int i = 0; i < m_cols; ++i)
@@ -265,7 +267,7 @@ bool Board::castlePossible(const Coord& king_current_tile, const Coord& rook_cur
 
     if (king->has_moved || rook->has_moved) return false;
 
-    std::unordered_set<Coord> attacked_squares = generateAttackedSquares();
+    std::unordered_set<Coord> attacked_squares = generateAttackedSquares(m_computer_king->getTeam());
     if (attacked_squares.contains(king_current_tile)) { return false; }
     int castle_row = king_current_tile.row;
 
@@ -347,7 +349,11 @@ void Board::updateTurn()
 {
     if (m_current_turn == Team::white) m_current_turn = Team::black;
     else m_current_turn = Team::white;
+    game_over = gameOver();
     player_in_check = playerInCheck();
+    player_in_checkmate = player_in_check && game_over;
+    computer_in_check = computerInCheck();
+    computer_in_checkmate = computer_in_check && game_over;
 }
 
 void Board::setTexturePos(int row, int col)
@@ -373,9 +379,10 @@ void Board::resetBoard()
     for (auto& row : m_field) row.resize(m_cols);
     initializePieces();
     m_current_turn = Team::white;
+    cmmove = "";
 }
 
-std::unordered_set<Coord> Board::generateAttackedSquares() const
+std::unordered_set<Coord> Board::generateAttackedSquares(Team attacker) const
 {
     std::unordered_set<Coord> attacked_squares;
     std::unordered_set<Coord> piece_threats;
@@ -385,7 +392,7 @@ std::unordered_set<Coord> Board::generateAttackedSquares() const
     {
         for (const auto& tile : row)
        {
-            if (tile && tile->getTeam() != player_team) piece_threats = tile->getMoves(m_field);
+            if (tile && tile->getTeam() == attacker) piece_threats = tile->getMoves(m_field);
             attacked_squares.merge(piece_threats);
         }
     }
@@ -396,9 +403,26 @@ bool Board::playerInCheck() const
 {
     Coord king_location = m_player_king->getCoord();
     Team player_team = m_player_king->getTeam();
-    std::unordered_set<Coord> attacked_squares = generateAttackedSquares();
+    std::unordered_set<Coord> attacked_squares = generateAttackedSquares(m_computer_king->getTeam());
     return attacked_squares.contains(king_location);
 }
+
+bool Board::computerInCheck() const
+{
+    Coord king_location = m_computer_king->getCoord();
+    Team computer_team = m_computer_king->getTeam();
+    std::unordered_set<Coord> attacked_squares = generateAttackedSquares(m_player_king->getTeam());
+    return attacked_squares.contains(king_location);
+}
+
+bool Board::gameOver()
+{
+    std::string move_possible = computer.calculateBestMove(move_list);
+    constexpr std::string_view END_OF_GAME_MOVE{"(non"};
+    if (move_possible == END_OF_GAME_MOVE) { return true; }
+    return false;
+}
+
 
 std::string Board::coordToMove(Coord coord)
 {

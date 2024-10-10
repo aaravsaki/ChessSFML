@@ -22,6 +22,7 @@ namespace Menu
             board.setCurrentTurn(Team::black);
             board.resetBoard();
             board.makeComputerMove();
+            board.updateTurn();
         }
         ImGui::SeparatorText("Computer Settings");
         ImGui::SeparatorText("Shortcuts");
@@ -48,20 +49,22 @@ namespace Menu
         ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
         ImGui::SetNextWindowBgAlpha(0.35f);
 
-        if (!ImGui::Begin("Example: Simple overlay", p_open, window_flags))
+        if (!ImGui::Begin("Game Info Overlay", p_open, window_flags))
         {
             ImGui::End();
             return;
         }
 
-        if (board.player_in_check)
+        if (board.game_over)
         {
-            ImGui::Text("In Check");
+            if (board.player_in_check) { ImGui::Text("Game Over: Computer Wins"); }
+            else if (board.computer_in_check) { ImGui::Text("Game Over: Player Wins"); }
+            else { ImGui::Text("Game Over: Stalemate"); }
         }
-        else
-        {
-            ImGui::Text("Not in Check");
-        }
+        else if (board.player_in_check) { ImGui::Text("Player in Check"); }
+        else if (board.computer_in_check) { ImGui::Text("Computer in Check"); }
+        else { ImGui::Text("Not in Check"); }
+
         ImGui::SeparatorText("Move List");
         ImGui::Text("%s ", board.cmmove.c_str());
         ImGui::End();
