@@ -1,5 +1,4 @@
 #include "uci.hpp"
-#include <iostream>
 
 Computer::Computer()
 {
@@ -41,7 +40,6 @@ std::string Computer::calculateBestMove(std::vector<std::string> move_list, int 
     for (auto move : move_list)
     {
         position += (" " + move);
-        std::cout << position << std::endl;
     }
 
     send(position);
@@ -50,11 +48,9 @@ std::string Computer::calculateBestMove(std::vector<std::string> move_list, int 
 
     for (std::string line; std::getline(m_engine_output, line); await_lines--)
     {
-        std::cout << line << std::endl;
         auto it = line.find("bestmove");
         if (it != line.npos) {
 
-            std::cout << line.substr(9, 4);
             return line.substr(9, 4);
         }
     }
